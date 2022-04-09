@@ -2,3 +2,7 @@ pandas==1.2.0
 numpy==1.19.5
 pydantic==1.8.2
 fastapi==0.75.1
+uvicorn==0.12.3
+aiofiles==0.6.0
+python-multipart==0.0.5
+jinja2==2.11.2
