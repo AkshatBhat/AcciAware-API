@@ -1,0 +1,4 @@
+pandas==1.2.0
+numpy==1.19.5
+pydantic==1.8.2
+fastapi==0.75.1
