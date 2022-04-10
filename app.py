@@ -9,7 +9,14 @@ import json
 
 def convert_input_list_to_json_input(custom_input_list):
     d = dict()
-    keys = ['police_station','light','weather','hit_and_run','highway','type_of_collision','zone','lat',
+    keys = [
+        'police_station',
+        'light',
+        'weather',
+        'highway',
+        'type_of_collision',
+        'zone',
+        'lat',
         'lon',
         'year',
         'month',
@@ -23,11 +30,11 @@ def convert_input_list_to_json_input(custom_input_list):
         'wspd',
         'pres',
         'coco',
-        'diff_in_days',
         'shape_length',
         'hour',
         'lon_factor',
-        'lat_factor']
+        'lat_factor'
+    ]
     for i,item in enumerate(keys):
         d[item] = custom_input_list[i]
 
@@ -38,8 +45,7 @@ def convert_input_list_to_json_input(custom_input_list):
 class Input(BaseModel):
     police_station: str
     light: str
-    weather: str
-    hit_and_run: str 
+    weather: str 
     highway: str 
     type_of_collision: str
     zone: str
@@ -57,39 +63,45 @@ class Input(BaseModel):
     wspd: float
     pres: float 
     coco: float 
-    diff_in_days: float
     shape_length: float 
     hour: float
     lon_factor: float
     lat_factor: float
 
 # Default Input List (for testing purposes)
-default_input_list = ['Matunga','day','clear-day','No','trunk','Vehicle to Vehicle','Zone 2',
+default_input_list = [ 'Matunga','day','clear-day','trunk','Unknown','Zone 2',
        19.017775,72.848129,2020.000000,12.000000,3.000000,31.000000,27.000000,18.000000,58.000000,
-       0.000000,350.000000,5.400000,1012.000000,5.000000,0.000000,314.801455,17.000000,0.848129,0.017775]
+       0.000000,350.000000,5.400000,1012.000000,5.000000,314.801455,17.000000,0.848129,0.017775]
 
 # API
 app = FastAPI()
 inp = pd.DataFrame(
-    columns=['Police Station','light','weather','Hit & Run','highway','Type of Collision','zone','lat',
-    'lon',
-    'year',
-    'month',
-    'day',
-    'date',
-    'temp',
-    'dwpt',
-    'rhum',
-    'prcp',
-    'wdir',
-    'wspd',
-    'pres',
-    'coco',
-    'diff_in_days',
-    'shape_length',
-    'hour',
-    'lon_factor',
-    'lat_factor']
+    columns=[
+        'Police Station',
+        'light',
+        'weather',
+        'highway',
+        'Type of Collision',
+        'zone',
+        'lat',
+        'lon',
+        'year',
+        'month',
+        'day',
+        'date',
+        'temp',
+        'dwpt',
+        'rhum',
+        'prcp',
+        'wdir',
+        'wspd',
+        'pres',
+        'coco',
+        'shape_length',
+        'hour',
+        'lon_factor',
+        'lat_factor'
+    ]
 )
 input_df = pd.DataFrame(columns=['Police Station_Aarey',
     'Police Station_Agripada',
@@ -194,9 +206,6 @@ input_df = pd.DataFrame(columns=['Police Station_Aarey',
     'weather_partly-cloudy-day',
     'weather_partly-cloudy-night',
     'weather_wind',
-    'Hit & Run_No',
-    'Hit & Run_Unknown',
-    'Hit & Run_Yes',
     'highway_Unknown',
     'highway_bridleway',
     'highway_construction',
@@ -254,7 +263,6 @@ input_df = pd.DataFrame(columns=['Police Station_Aarey',
     'Type of Collision_Man Sleeping on Road',
     'Type of Collision_Motor Cycle Passenger Hits Vehicle',
     'Type of Collision_Motor Cycle hit to motor car opened door/Another Motor Car hit to Motor Cycle from behind',
-    'Type of Collision_None',
     'Type of Collision_Parked Vehicle',
     'Type of Collision_Passenger Getting down from Bus',
     'Type of Collision_Passenger coming out of Taxi',
@@ -297,7 +305,6 @@ input_df = pd.DataFrame(columns=['Police Station_Aarey',
     'wspd',
     'pres',
     'coco',
-    'diff_in_days',
     'shape_length',
     'hour',
     'lon_factor',
@@ -312,12 +319,11 @@ async def predict(input: Input):
     df3 = pd.concat([input_df,df2])
     df3.fillna(0.0)
     count = 0
-    for ele in input_row[:7]:
-        # print(f"{inp.columns[count]}_{ele}")
+    for ele in input_row[:6]:
         df3[f"{inp.columns[count]}_{ele}"] = 1.0
         count+=1
-    count = 7
-    for num in input_row[7:]:
+    count = 6
+    for num in input_row[6:]:
         df3[inp.columns[count]] = num
         count +=1
 
@@ -327,10 +333,19 @@ async def predict(input: Input):
 
     # Depickling of model and Prediction
     loaded_model = pickle.load(open('XGB_Best_Model.pkl', 'rb'))
-    result = loaded_model.predict(final_input)
-    result = result.tolist()
+    xgc_proba = loaded_model.predict_proba(final_input)
+    accident_proba = []
+    for p in xgc_proba:
+        cl = np.argmax(p)
+        if cl == 0:
+            accident_proba.append(np.average([p[0],p[1]], weights=[0.7, 0.3]))
+        elif cl ==1 :
+            accident_proba.append(np.average([p[0],p[1]], weights=[0.3, 0.7]))
+        else:
+            accident_proba.append(1 - p[2])
 
     outcome = {0: 'Fatal', 1:'Injurious', 2:'Safe'}
-
     # Return prediction etc. whatever UI wants
-    return {'predicted_output': result[0], 'outcome': outcome[result[0]]} 
+    return {'accident_chance': round(accident_proba[0]*100,2), 'outcome': outcome[int(np.argmax(xgc_proba))]} 
+
+# print(convert_input_list_to_json_input(default_input_list))
