@@ -10,7 +10,6 @@ import json
 def convert_input_list_to_json_input(custom_input_list):
     d = dict()
     keys = [
-        'police_station',
         'light',
         'weather',
         'highway',
@@ -43,7 +42,6 @@ def convert_input_list_to_json_input(custom_input_list):
 
 # Input Model
 class Input(BaseModel):
-    police_station: str
     light: str
     weather: str 
     highway: str 
@@ -69,7 +67,7 @@ class Input(BaseModel):
     lat_factor: float
 
 # Default Input List (for testing purposes)
-default_input_list = [ 'Matunga','day','clear-day','trunk','Unknown','Zone 2',
+default_input_list = ['day','clear-day','trunk','Unknown','Zone 2',
        19.017775,72.848129,2020.000000,12.000000,3.000000,31.000000,27.000000,18.000000,58.000000,
        0.000000,350.000000,5.400000,1012.000000,5.000000,314.801455,17.000000,0.848129,0.017775]
 
@@ -77,7 +75,6 @@ default_input_list = [ 'Matunga','day','clear-day','trunk','Unknown','Zone 2',
 app = FastAPI()
 inp = pd.DataFrame(
     columns=[
-        'Police Station',
         'light',
         'weather',
         'highway',
@@ -103,97 +100,8 @@ inp = pd.DataFrame(
         'lat_factor'
     ]
 )
-input_df = pd.DataFrame(columns=['Police Station_Aarey',
-    'Police Station_Agripada',
-    'Police Station_Airport',
-    'Police Station_Amboli',
-    'Police Station_Andheri',
-    'Police Station_Antop Hill',
-    'Police Station_Azad Maidan',
-    'Police Station_BKC',
-    'Police Station_Bandra',
-    'Police Station_Bangurnagar',
-    'Police Station_Bhandup',
-    'Police Station_Bhoiwada',
-    'Police Station_Borivali',
-    'Police Station_Byculla',
-    'Police Station_Charkop',
-    'Police Station_Chembur',
-    'Police Station_Chunabhatti',
-    'Police Station_Colaba',
-    'Police Station_Cuff Parade',
-    'Police Station_D.B. Marg',
-    'Police Station_D.N. Nagar',
-    'Police Station_Dadar',
-    'Police Station_Dahisar',
-    'Police Station_Deonar',
-    'Police Station_Dharavi',
-    'Police Station_Dindoshi',
-    'Police Station_Dongri',
-    'Police Station_Gamdevi',
-    'Police Station_Ghatkopar',
-    'Police Station_Gorai',
-    'Police Station_Goregaon',
-    'Police Station_Govandi',
-    'Police Station_J.J. Marg',
-    'Police Station_Jogeshwari',
-    'Police Station_Juhu',
-    'Police Station_Kalachowki',
-    'Police Station_Kandivali',
-    'Police Station_Kanjur Marg',
-    'Police Station_Kasturba Marg',
-    'Police Station_Khar',
-    'Police Station_Kherwadi',
-    'Police Station_Kurargaon',
-    'Police Station_Kurla',
-    'Police Station_L.T. Marg',
-    'Police Station_MHB Borivali',
-    'Police Station_MIDC',
-    'Police Station_MRA Marg',
-    'Police Station_Mahim',
-    'Police Station_Malabar Hill',
-    'Police Station_Malad',
-    'Police Station_Malvani',
-    'Police Station_Mankhrud',
-    'Police Station_Marine Drive',
-    'Police Station_Matunga',
-    'Police Station_Meghwadi',
-    'Police Station_Mulund',
-    'Police Station_N.M. Joshi',
-    'Police Station_Nagpada',
-    'Police Station_Navghar',
-    'Police Station_Nehru Nagar',
-    'Police Station_Nirmal Nagar',
-    'Police Station_Oshiwara',
-    'Police Station_Pant Nagar',
-    'Police Station_Parksite',
-    'Police Station_Powai',
-    'Police Station_Pydhonie',
-    'Police Station_RAK Marg',
-    'Police Station_RCF',
-    'Police Station_Sahar Airport',
-    'Police Station_Sakinaka',
-    'Police Station_Samta Nagar',
-    'Police Station_Santacruz',
-    'Police Station_Sewree',
-    'Police Station_Shahunagar',
-    'Police Station_Shivaji Nagar',
-    'Police Station_Shivaji Park',
-    'Police Station_Sion',
-    'Police Station_Tardeo',
-    'Police Station_Tilak Nagar',
-    'Police Station_Trombay',
-    'Police Station_V.B. Nagar',
-    'Police Station_V.P. Road',
-    'Police Station_Vakola',
-    'Police Station_Vanrai',
-    'Police Station_Versova',
-    'Police Station_Vikhroli',
-    'Police Station_Vile Parle',
-    'Police Station_Wadala',
-    'Police Station_Wadala T.T',
-    'Police Station_Worli',
-    'Police Station_Yellow Gate',
+input_df = pd.DataFrame(
+    columns=[
     'light_dawn',
     'light_day',
     'light_dusk',
@@ -319,11 +227,11 @@ async def predict(input: Input):
     df3 = pd.concat([input_df,df2])
     df3.fillna(0.0)
     count = 0
-    for ele in input_row[:6]:
+    for ele in input_row[:5]:
         df3[f"{inp.columns[count]}_{ele}"] = 1.0
         count+=1
-    count = 6
-    for num in input_row[6:]:
+    count = 5
+    for num in input_row[5:]:
         df3[inp.columns[count]] = num
         count +=1
 
