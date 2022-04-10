@@ -242,16 +242,17 @@ async def predict(input: Input):
     # Depickling of model and Prediction
     loaded_model = pickle.load(open('XGB_Best_Model.pkl', 'rb'))
     xgc_proba = loaded_model.predict_proba(final_input)
+    # print(xgc_proba)
     accident_proba = []
     for p in xgc_proba:
         cl = np.argmax(p)
         if cl == 0:
             accident_proba.append(np.average([p[0],p[1]], weights=[0.7, 0.3]))
-        elif cl ==1 :
+        elif cl == 1 :
             accident_proba.append(np.average([p[0],p[1]], weights=[0.3, 0.7]))
         else:
             accident_proba.append(1 - p[2])
-
+    # print(accident_proba)
     outcome = {0: 'Fatal', 1:'Injurious', 2:'Safe'}
     # Return prediction etc. whatever UI wants
     return {'accident_chance': round(accident_proba[0]*100,2), 'outcome': outcome[int(np.argmax(xgc_proba))]} 
